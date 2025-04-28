@@ -13,7 +13,7 @@ ACCESS_SECRET = os.environ.get("TWITTER_ACCESS_SECRET")
 
 # --- 3name.xyz からデータ取得 ---
 def fetch_ids():
-    url = "https://3name.xyz/search"
+    url = "https://laby.net/names?length=3&available=true"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
@@ -22,12 +22,11 @@ def fetch_ids():
     
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    id_elements = soup.select("table tbody tr td:first-child")
+    # 3文字ID一覧は class="playername" に入ってる
+    id_elements = soup.select(".playername")
 
     ids = [elem.text.strip() for elem in id_elements if elem.text.strip()]
     return ids
-
-
 
 # --- Twitterに投稿 ---
 def post_to_twitter(ids):
