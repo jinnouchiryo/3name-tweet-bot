@@ -11,9 +11,8 @@ API_SECRET = os.environ.get("TWITTER_API_SECRET")
 ACCESS_TOKEN = os.environ.get("TWITTER_ACCESS_TOKEN")
 ACCESS_SECRET = os.environ.get("TWITTER_ACCESS_SECRET")
 
-# --- 3name.xyz からデータ取得 ---
 def fetch_ids():
-    url = "https://laby.net/names?length=3&available=true"
+    url = "https://namemc.com/minecraft-names?sort=asc&length_op=eq&length=3&lang=&searches=0"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
@@ -22,11 +21,11 @@ def fetch_ids():
     
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    # 3文字ID一覧は class="playername" に入ってる
-    id_elements = soup.select(".playername")
+    id_elements = soup.select("a.card-title")
 
     ids = [elem.text.strip() for elem in id_elements if elem.text.strip()]
     return ids
+
 
 # --- Twitterに投稿 ---
 def post_to_twitter(ids):
