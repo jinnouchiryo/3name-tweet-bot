@@ -14,16 +14,19 @@ ACCESS_SECRET = os.environ.get("TWITTER_ACCESS_SECRET")
 # --- 3name.xyz からデータ取得 ---
 def fetch_ids():
     url = "https://3name.xyz/search"
-    response = requests.get(url)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    response = requests.get(url, headers=headers)
     response.raise_for_status()
     
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    # 正しいセレクタに変更
     id_elements = soup.select("table tbody tr td:first-child")
 
     ids = [elem.text.strip() for elem in id_elements if elem.text.strip()]
     return ids
+
 
 
 # --- Twitterに投稿 ---
