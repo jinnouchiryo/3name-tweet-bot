@@ -1,42 +1,59 @@
 import os
 import time
-import tweepy
+import pytesseract
+from PIL import Image
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
+import tweepy
 
-# 1. Twitter認証（v2 API用）
-client = tweepy.Client(
-    consumer_key=os.getenv('TWITTER_API_KEY'),
-    consumer_secret=os.getenv('TWITTER_API_SECRET'),
-    access_token=os.getenv('TWITTER_ACCESS_TOKEN'),
-    access_token_secret=os.getenv('TWITTER_ACCESS_SECRET')
-)
+# 環境変数からTwitter APIキーを取得
+TWITTER_API_KEY = os.environ['TWITTER_API_KEY']
+TWITTER_API_SECRET = os.environ['TWITTER_API_SECRET']
+TWITTER_ACCESS_TOKEN = os.environ['TWITTER_ACCESS_TOKEN']
+TWITTER_ACCESS_SECRET = os.environ['TWITTER_ACCESS_SECRET']
 
-# 2. Seleniumのオプション設定
+# セレニウム設定
 chrome_options = Options()
-chrome_options.add_argument('--headless')  # 画面を表示しない
+chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
+driver = webdriver.Chrome(options=chrome_options)
 
-# 3. ChromeDriverサービスを指定
-service = Service('/snap/bin/chromium.chromedriver')
+# サイトを開く
+driver.get('https://laby.net/names')
+time.sleep(5)  # ページ読み込み待機
 
-# 4. ブラウザ起動
-driver = webdriver.Chrome(service=service, options=chrome_options)
-
-# 5. laby.net/namesを開いてスクリーンショット
-url = "https://laby.net/names"
-driver.get(url)
-time.sleep(5)  # ページ完全読み込みまで待機（秒数調整できる）
-driver.save_screenshot("today.png")
+# スクリーンショット保存
+screenshot_path = 'today.png'
+driver.save_screenshot(screenshot_path)
 driver.quit()
 
-# 6. テキストだけツイート（無料版）
-tweet_text = "今日の空き3文字IDリストはこちら！（※画像投稿は無料プラン非対応）"
-client.create_tweet(text=tweet_text)
+# 画像からIDリスト部分を切り抜き
+full_img = Image.open(screenshot_path)
 
-print("ツイート完了！")
+# ここは適宜調整！（今は仮の座標）
+# 【左, 上, 右, 下】で範囲指定（px単位）
+cropped_img = full_img.crop((50, 200, 600, 800))  
+cropped_path = 'cropped_today.png'
+cropped_img.save(cropped_path)
+
+# OCRで画像から文字読み取り
+text = pytesseract.image_to_string(Image.open(cropped_path), lang='eng')
+
+# 投稿する本文作成
+tweet_text = f"今日の空き3文字IDリストはこちら！\n\n{text.strip()}"
+
+# Twitterに投稿
+auth = tweepy.OAuth1UserHandler(
+    TWITTER_API_KEY, TWITTER_API_SECRET,
+    TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET
+)
+api = tweepy.API(auth)
+
+api.update_status(status=tweet_text)
+
+print("投稿完了！")
+
 
 
 
