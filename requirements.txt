@@ -4,3 +4,4 @@ tweepy
 pip install selenium
 pip install tweepy
 pip install requests
+selenium
