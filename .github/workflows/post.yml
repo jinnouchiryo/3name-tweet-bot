@@ -21,6 +21,11 @@ jobs:
         run: |
           pip install tweepy requests
 
+          - name: Install dependencies
+  run: |
+    pip install tweepy requests pillow
+
+
       - name: Run script
         env:
           TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
@@ -29,7 +34,4 @@ jobs:
           TWITTER_ACCESS_SECRET: ${{ secrets.TWITTER_ACCESS_SECRET }}
         run: python fetch_and_tweet.py
 
-        - name: Install dependencies
-  run: |
-    pip install tweepy requests pillow
 
