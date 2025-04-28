@@ -1,57 +1,43 @@
 import os
 import time
+import tweepy
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-import tweepy
-
-# Twitter API keys from GitHub Secrets
-API_KEY = os.getenv('TWITTER_API_KEY')
-API_SECRET = os.getenv('TWITTER_API_SECRET')
-ACCESS_TOKEN = os.getenv('TWITTER_ACCESS_TOKEN')
-ACCESS_SECRET = os.getenv('TWITTER_ACCESS_SECRET')
-
-# 1. ヘッドレスChrome設定
-chrome_options = Options()
-chrome_options.add_argument('--headless')
-chrome_options.add_argument('--no-sandbox')
-chrome_options.add_argument('--disable-dev-shm-usage')
-
-# 2. ブラウザ起動
 from selenium.webdriver.chrome.service import Service
 
-chrome_options = webdriver.ChromeOptions()
-chrome_options.add_argument('--headless')
+# 1. Twitter認証（v2 API用）
+client = tweepy.Client(
+    consumer_key=os.getenv('TWITTER_API_KEY'),
+    consumer_secret=os.getenv('TWITTER_API_SECRET'),
+    access_token=os.getenv('TWITTER_ACCESS_TOKEN'),
+    access_token_secret=os.getenv('TWITTER_ACCESS_SECRET')
+)
+
+# 2. Seleniumのオプション設定
+chrome_options = Options()
+chrome_options.add_argument('--headless')  # 画面を表示しない
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 
-service = Service('/snap/bin/chromium.chromedriver')  # <- Snapのchromedriverを直接指定
+# 3. ChromeDriverサービスを指定
+service = Service('/snap/bin/chromium.chromedriver')
+
+# 4. ブラウザ起動
 driver = webdriver.Chrome(service=service, options=chrome_options)
 
-
-# 3. ページを開く
+# 5. laby.net/namesを開いてスクリーンショット
 url = "https://laby.net/names"
 driver.get(url)
-time.sleep(5)  # ページ完全読み込み待機（必要に応じて秒数調整）
-
-# 4. スクリーンショット保存
+time.sleep(5)  # ページ完全読み込みまで待機（秒数調整できる）
 driver.save_screenshot("today.png")
-
-# 5. ブラウザ閉じる
 driver.quit()
 
-# 6. Twitter認証
-auth = tweepy.OAuth1UserHandler(
-    API_KEY, API_SECRET,
-    ACCESS_TOKEN, ACCESS_SECRET
-)
-api = tweepy.API(auth)
-
-# 7. ツイート＋画像アップロード
-tweet_text = "今日の空き3文字IDリストはこちら！（画像投稿は無料プラン非対応なのでテキストのみ）"
-api.update_status(status=tweet_text)
-
+# 6. テキストだけツイート（無料版）
+tweet_text = "今日の空き3文字IDリストはこちら！（※画像投稿は無料プラン非対応）"
+client.create_tweet(text=tweet_text)
 
 print("ツイート完了！")
+
 
 
 
