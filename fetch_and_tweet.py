@@ -17,7 +17,16 @@ chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 
 # 2. ブラウザ起動
-driver = webdriver.Chrome(options=chrome_options)
+from selenium.webdriver.chrome.service import Service
+
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument('--headless')
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
+
+service = Service('/snap/bin/chromium.chromedriver')  # <- Snapのchromedriverを直接指定
+driver = webdriver.Chrome(service=service, options=chrome_options)
+
 
 # 3. ページを開く
 url = "https://laby.net/names"
