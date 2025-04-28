@@ -1,61 +1,42 @@
-import requests
-from bs4 import BeautifulSoup
-import tweepy
-import textwrap
 import os
-from datetime import datetime
+import requests
+import tweepy
+import random
+import itertools
 
-# --- Twitter API認証情報 ---
-API_KEY = os.environ.get("TWITTER_API_KEY")
-API_SECRET = os.environ.get("TWITTER_API_SECRET")
-ACCESS_TOKEN = os.environ.get("TWITTER_ACCESS_TOKEN")
-ACCESS_SECRET = os.environ.get("TWITTER_ACCESS_SECRET")
+# Twitter認証
+client = tweepy.Client(
+    consumer_key=os.environ['TWITTER_API_KEY'],
+    consumer_secret=os.environ['TWITTER_API_SECRET'],
+    access_token=os.environ['TWITTER_ACCESS_TOKEN'],
+    access_token_secret=os.environ['TWITTER_ACCESS_SECRET']
+)
 
-def fetch_ids():
-    url = "https://namemc.com/minecraft-names?sort=asc&length_op=eq&length=3&lang=&searches=0"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    }
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()
+# 3文字組み合わせ生成
+chars = 'abcdefghijklmnopqrstuvwxyz0123456789_'
+combos = itertools.product(chars, repeat=3)
+
+# 利用可能IDリスト
+available_ids = []
+
+for combo in combos:
+    username = ''.join(combo)
+    url = f"https://api.mojang.com/users/profiles/minecraft/{username}"
+    response = requests.get(url)
     
-    soup = BeautifulSoup(response.text, 'html.parser')
+    if response.status_code == 204:  # 204 = User not found
+        available_ids.append(username)
 
-    id_elements = soup.select("a.card-title")
+    if len(available_ids) >= 10:
+        break
 
-    ids = [elem.text.strip() for elem in id_elements if elem.text.strip()]
-    return ids
+# 投稿する内容
+if available_ids:
+    tweet_text = "【空いてる3文字ID発見】\n" + "\n".join(available_ids)
+else:
+    tweet_text = "今日の新しい3文字IDはありませんでした！"
 
+# ツイート送信
+client.create_tweet(text=tweet_text)
+print(f"ツイート完了: {tweet_text}")
 
-# --- Twitterに投稿 ---
-def post_to_twitter(ids):
-    client = tweepy.Client(
-        consumer_key=API_KEY,
-        consumer_secret=API_SECRET,
-        access_token=ACCESS_TOKEN,
-        access_token_secret=ACCESS_SECRET
-    )
-
-    today = datetime.now().strftime("%Y/%m/%d")
-    header = f"【{today} 取得可能な3文字IDリスト】\n"
-    message = header + ", ".join(ids)
-    chunks = textwrap.wrap(message, width=270, break_long_words=False, break_on_hyphens=False)
-
-    previous_tweet_id = None
-    for chunk in chunks:
-        if previous_tweet_id:
-            tweet = client.create_tweet(text=chunk, in_reply_to_tweet_id=previous_tweet_id)
-        else:
-            tweet = client.create_tweet(text=chunk)
-        previous_tweet_id = tweet.data['id']
-
-# --- メイン実行 ---
-def main():
-    ids = fetch_ids()
-    if ids:
-        post_to_twitter(ids)
-    else:
-        print("IDリストが取得できませんでした。")
-
-if __name__ == "__main__":
-    main()
