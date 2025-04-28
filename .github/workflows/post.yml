@@ -28,3 +28,8 @@ jobs:
           TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
           TWITTER_ACCESS_SECRET: ${{ secrets.TWITTER_ACCESS_SECRET }}
         run: python fetch_and_tweet.py
+
+        - name: Install dependencies
+  run: |
+    pip install tweepy requests pillow
+
