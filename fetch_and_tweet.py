@@ -47,9 +47,9 @@ auth = tweepy.OAuth1UserHandler(
 api = tweepy.API(auth)
 
 # 7. ツイート＋画像アップロード
-tweet_text = "今日の空き3文字IDリストはこちら！"
-media = api.media_upload("today.png")
-api.update_status(status=tweet_text, media_ids=[media.media_id])
+tweet_text = "今日の空き3文字IDリストはこちら！（画像投稿は無料プラン非対応なのでテキストのみ）"
+api.update_status(status=tweet_text)
+
 
 print("ツイート完了！")
 
