@@ -18,9 +18,13 @@ def fetch_ids():
     response.raise_for_status()
     
     soup = BeautifulSoup(response.text, 'html.parser')
-    id_elements = soup.select("div.text-2xl.font-bold.text-gray-900")
-    ids = [elem.text.strip() for elem in id_elements]
+
+    # 正しいセレクタに変更
+    id_elements = soup.select("table tbody tr td:first-child")
+
+    ids = [elem.text.strip() for elem in id_elements if elem.text.strip()]
     return ids
+
 
 # --- Twitterに投稿 ---
 def post_to_twitter(ids):
