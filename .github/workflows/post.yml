@@ -2,34 +2,36 @@ name: Tweet 3-character IDs daily
 
 on:
   schedule:
-    - cron: '0 9 * * *'  # 日本時間18時
+    - cron: '0 9 * * *' # 日本時間18時（UTCで9時）
   workflow_dispatch:
 
 jobs:
   tweet:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
 
-      - name: Install dependencies
-        run: |
-          pip install tweepy
-          pip install requests
-          pip install pillow
+    - name: Install dependencies
+      run: |
+        pip install tweepy selenium requests
+        sudo apt update
+        sudo apt install -y chromium-browser chromium-chromedriver
+        sudo ln -s /usr/bin/chromium-browser /usr/bin/google-chrome
 
-      - name: Run script
-        env:
-          TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
-          TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
-          TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
-          TWITTER_ACCESS_SECRET: ${{ secrets.TWITTER_ACCESS_SECRET }}
-        run: python fetch_and_tweet.py
+    - name: Run script
+      env:
+        TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
+        TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
+        TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+        TWITTER_ACCESS_SECRET: ${{ secrets.TWITTER_ACCESS_SECRET }}
+      run: python fetch_and_tweet.py
+
 
 
 
