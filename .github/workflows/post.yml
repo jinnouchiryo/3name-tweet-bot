@@ -18,12 +18,11 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: |
-          pip install tweepy requests
-
-          - name: Install dependencies
   run: |
-    pip install tweepy requests pillow
+    pip install tweepy
+    pip install requests
+    pip install pillow
+
 
 
       - name: Run script
